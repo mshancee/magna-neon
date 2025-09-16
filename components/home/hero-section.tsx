@@ -15,36 +15,34 @@ const typewriterPhrases = [
 ];
 
 const codeSnippets = [
-  `// Welcome to the future of development
-const community = {
-  developers: 1000+,
-  projects: 'unlimited',
-  innovation: 'continuous'
+  `// Welcome to the future of devs 🚀
+type Community = {
+  devs: number;
+  motto: string;
 };
 
-function joinCommunity() {
-  return community.developers.map(dev => 
-    dev.skills + dev.passion
-  ).reduce((acc, val) => acc + val, 'amazing');
+const community: Community = {
+  devs: 1000,
+  motto: "build & share"
+};
+
+export default function Join({ name }: { name: string }) {
+  return <p>{name}, welcome aboard!</p>;
+}`,
+
+  `import React from "react";
+
+function Innovation({ tech }: { tech: string }) {
+  return <span>{tech} ✨</span>;
 }
 
+export default function BuildTogether() {
+  const stack = ["Next.js", "AI", "Web3"];
 
-
-const future = new Innovation();`,
-
-  `import { creativity, passion } from 'developer';
-import { community, support } from 'magna-coders';
-
-export default function BuildFuture() {
-  const skills = ['React', 'AI/ML', 'Blockchain'];
-  const vision = 'world-changing';
-  
   return (
-    <div className="future">
-      {skills.map(skill => (
-        <Innovation key={skill} tech={skill} />
-      ))}
-    </div>
+    <section className="future">
+      {stack.map(s => <Innovation key={s} tech={s} />)}
+    </section>
   );
 }`,
 ];
@@ -214,7 +212,7 @@ export function HeroSection() {
           >
             <div className="w-full max-w-xl">
               <div className="bg-gray-950 backdrop-blur-md rounded-xl border border-border/50 shadow-2xl overflow-hidden">
-                {/* Terminal header */}
+                {/* Terminal header -mac vibe */}
                 <div className="flex items-center justify-between px-6 py-4 bg-gray-900 border-b border-border/30">
                   <div className="flex space-x-2">
                     <div className="w-3 h-3 bg-destructive rounded-full"></div>
@@ -222,7 +220,7 @@ export function HeroSection() {
                     <div className="w-3 h-3 bg-green-500 rounded-full"></div>
                   </div>
                   <div className="text-muted-foreground text-sm font-mono">
-                    innovation.js
+                    innovation.tsx
                   </div>
                   <div className="w-6 h-6"></div>
                 </div>

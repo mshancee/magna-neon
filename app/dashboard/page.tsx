@@ -9,18 +9,17 @@ export default async function DashboardPage() {
   if (!session) {
     redirect("/");
   }
-
   // If session exists, render the dashboard content directly
   return (
-    <div className="min-h-screen bg-black text-white p-8">
+    <div className="min-h-screen bg-black text-white p-4">
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold">Dashboard</h1>
+          <h1 className="text-3xl font-bold">Dashboard: Debug</h1>
           <SignOutButton />
         </div>
 
         {/* User Information Section */}
-        <div className="bg-gray-900 rounded-lg p-6 mb-8">
+        <div className="bg-gray-900/50 rounded-lg p-6 mb-8">
           <h2 className="text-xl font-semibold mb-4">User Information</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -57,9 +56,9 @@ export default async function DashboardPage() {
         </div>
 
         {/* Raw Session Data */}
-        <div className="bg-gray-900 rounded-lg p-6">
+        <div className="bg-gray-900/50 rounded-lg p-4">
           <h2 className="text-xl font-semibold mb-4">Raw Session Data</h2>
-          <pre className="bg-gray-800 p-4 rounded overflow-x-auto text-sm">
+          <pre className="bg-gray-900/50 p-4 rounded overflow-x-auto text-sm text-green-400">
             {JSON.stringify(session, null, 2)}
           </pre>
         </div>

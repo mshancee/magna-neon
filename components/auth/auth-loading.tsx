@@ -1,3 +1,4 @@
+// dummy component to show loading spinner while checking auth status
 export default function AuthLoading() {
   return (
     <div className="min-h-screen bg-black flex items-center justify-center">

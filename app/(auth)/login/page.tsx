@@ -11,3 +11,11 @@ export default function SignInPage() {
     </div>
   );
 }
+
+// of course, you can customize the metadata as needed
+const metadata = {
+  title: "Sign In - Magna coders",
+  description: "Sign in to access your account on Magna coders.",
+};
+
+export { metadata };

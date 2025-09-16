@@ -11,3 +11,11 @@ export default function SignUpPage() {
     </div>
   );
 }
+
+// of course, you can customize the metadata as needed
+const metadata = {
+  title: "Register - Magna coders",
+  description: "Create a new account on Magna coders",
+};
+
+export { metadata };
