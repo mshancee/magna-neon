@@ -1,0 +1,43 @@
+{
+  "id": "/",
+  "name": "Magna Coders",
+  "short_name": "Magna",
+  "description": "Where developers, designers, and problem-solvers unite to create tech solutions for real-world challenges.",
+  "start_url": "/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay"],
+  "background_color": "#000000",
+  "theme_color": "#F9E4AD",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "developer", "technology"],
+  "lang": "en",
+  "dir": "ltr",
+  "prefer_related_applications": false
+}
