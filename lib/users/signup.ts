@@ -2,10 +2,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@/drizzle/drizzle";
 import { users } from "@/drizzle/schema";
 
-/**
- * Get user by email for authentication
- * Returns user with all necessary fields for auth
- */
+// Get user by email
 export async function getUserByEmail(email: string) {
   try {
     const [user] = await db
@@ -34,9 +31,7 @@ export async function getUserByEmail(email: string) {
   }
 }
 
-/**
- * Check if user exists by email
- */
+// Check if user exists by email
 export async function userExistsByEmail(email: string): Promise<boolean> {
   try {
     const [user] = await db

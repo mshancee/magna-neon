@@ -12,7 +12,6 @@ declare module "next-auth" {
       status: UserStatus;
       country: string;
       referralCode: string;
-      // Timestamps for session info
       createdAt: string;
       updatedAt: string;
     } & DefaultSession["user"];
@@ -26,7 +25,6 @@ declare module "next-auth" {
     status: UserStatus;
     country: string;
     referralCode: string;
-    // Timestamps
     createdAt: string;
     updatedAt: string;
   }

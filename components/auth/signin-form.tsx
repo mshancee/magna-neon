@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/card";
 import { Loader2, AlertCircle } from "lucide-react";
 import Link from "next/link";
-import { signInSchemaSimple } from "@/lib/validations/auth";
+import { signInSchema } from "@/lib/validations/auth";
 
 type SignInFormData = {
   email: string;
@@ -47,7 +47,7 @@ export default function SigninForm() {
     formState: { errors, isSubmitting },
     clearErrors,
   } = useForm<SignInFormData>({
-    resolver: zodResolver(signInSchemaSimple),
+    resolver: zodResolver(signInSchema),
     mode: "onSubmit",
     defaultValues: {
       email: "",

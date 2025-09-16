@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/card";
 import { AlertCircle, Loader2 } from "lucide-react";
 import Link from "next/link";
-import { signUpSchemaSimple } from "@/lib/validations/auth";
+import { signUpSchema } from "@/lib/validations/auth";
 
 // Create a local type that matches our form defaults
 type FormData = {
@@ -43,7 +43,7 @@ export default function SignupForm() {
     formState: { errors, isSubmitting },
     clearErrors,
   } = useForm<FormData>({
-    resolver: zodResolver(signUpSchemaSimple),
+    resolver: zodResolver(signUpSchema),
     mode: "onSubmit",
     defaultValues: {
       name: "",

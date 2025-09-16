@@ -1,16 +1,13 @@
-// Enums (exported first to avoid conflicts)
-export * from "./schema/enums";
+export * from "./schema/enums"; // export this first
 
-// Core tables
 export * from "./schema/users";
-
-// ────────────────────────────────────────────────────────────────
-// DRIZZLE SCHEMA OBJECT — Used by `drizzle.config.ts` and migration tooling
-// ────────────────────────────────────────────────────────────────
+//add other tables here as you create them
 
 import { users } from "./schema/users";
+// add other tables here as you create them
 
 // schema object for Drizzle CLI and queryClient usage
 export const schema = {
   users,
+  // add other tables here as you create them
 };

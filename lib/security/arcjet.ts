@@ -5,27 +5,22 @@ import arcjet, {
   fixedWindow,
 } from "@arcjet/next";
 
-// Environment configuration
 const isDevelopment = process.env.NODE_ENV === "development";
 
-// ─── MAIN ARCJET INSTANCE ──────────────────────────────────────────────────────
+// main arcjet instance.
 export const aj = arcjet({
   key: process.env.ARCJET_KEY!,
   rules: [
-    // Basic rate limiting
     fixedWindow({
       mode: "LIVE",
       characteristics: ["ip.src"],
       window: "1m",
       max: 60,
-      // More permissive in development
       ...(isDevelopment && { max: 120 }),
     }),
-    // Shield protection
     shield({
       mode: "LIVE",
     }),
-    // Bot detection - allow legitimate bots
     detectBot({
       mode: "LIVE",
       allow: ["CATEGORY:SEARCH_ENGINE", "CATEGORY:PREVIEW", "CATEGORY:MONITOR"],
@@ -33,23 +28,20 @@ export const aj = arcjet({
   ],
 });
 
-// ─── AUTHENTICATION ROUTES PROTECTION ──────────────────────────────────────────
+// auth routes protection
 export const authProtection = arcjet({
   key: process.env.ARCJET_KEY!,
   rules: [
-    // Stricter rate limiting for auth routes
     fixedWindow({
       mode: "LIVE",
       characteristics: ["ip.src"],
       window: "1m",
-      max: 10, // Lower limit for auth attempts
+      max: 10,
       ...(isDevelopment && { max: 30 }),
     }),
-    // Enhanced shield protection
     shield({
       mode: "LIVE",
     }),
-    // Block all bots on auth routes
     detectBot({
       mode: "LIVE",
       allow: [],
@@ -57,11 +49,10 @@ export const authProtection = arcjet({
   ],
 });
 
-// ─── PUBLIC ROUTES PROTECTION ──────────────────────────────────────────────────
+// public routes protection
 export const publicProtection = arcjet({
   key: process.env.ARCJET_KEY!,
   rules: [
-    // Relaxed rate limiting for public access
     fixedWindow({
       mode: "LIVE",
       characteristics: ["ip.src"],
@@ -69,11 +60,9 @@ export const publicProtection = arcjet({
       max: 100,
       ...(isDevelopment && { max: 200 }),
     }),
-    // Basic shield protection
     shield({
       mode: "LIVE",
     }),
-    // Allow search engines and legitimate bots
     detectBot({
       mode: "LIVE",
       allow: [
@@ -86,59 +75,10 @@ export const publicProtection = arcjet({
   ],
 });
 
-// ─── ADMIN ROUTES PROTECTION ────────────────────────────────────────────────────
-export const deskProtection = arcjet({
-  key: process.env.ARCJET_KEY!,
-  rules: [
-    // Moderate rate limiting for admin users
-    fixedWindow({
-      mode: "LIVE",
-      characteristics: ["ip.src"],
-      window: "1m",
-      max: 30,
-      ...(isDevelopment && { max: 60 }),
-    }),
-    // Enhanced shield protection
-    shield({
-      mode: "LIVE",
-    }),
-    // Block all bots on desk routes
-    detectBot({
-      mode: "LIVE",
-      allow: [],
-    }),
-  ],
-});
-
-// ─── FINANCIAL API PROTECTION ──────────────────────────────────────────────────
-export const financialProtection = arcjet({
-  key: process.env.ARCJET_KEY!,
-  rules: [
-    // Strict rate limiting for financial operations
-    fixedWindow({
-      mode: "LIVE",
-      characteristics: ["ip.src"],
-      window: "1m",
-      max: 5, // Very low limit for financial operations
-      ...(isDevelopment && { max: 15 }),
-    }),
-    // Maximum shield protection
-    shield({
-      mode: "LIVE",
-    }),
-    // Block all bots
-    detectBot({
-      mode: "LIVE",
-      allow: [],
-    }),
-  ],
-});
-
-// ─── GENERAL API PROTECTION ─────────────────────────────────────────────────────
+// general API protection
 export const apiProtection = arcjet({
   key: process.env.ARCJET_KEY!,
   rules: [
-    // Standard API rate limiting
     fixedWindow({
       mode: "LIVE",
       characteristics: ["ip.src"],
@@ -146,11 +86,9 @@ export const apiProtection = arcjet({
       max: 40,
       ...(isDevelopment && { max: 80 }),
     }),
-    // Shield protection
     shield({
       mode: "LIVE",
     }),
-    // Allow legitimate service bots
     detectBot({
       mode: "LIVE",
       allow: ["CATEGORY:MONITOR"],
@@ -158,51 +96,19 @@ export const apiProtection = arcjet({
   ],
 });
 
-// ─── VOUCHER SYSTEM PROTECTION ──────────────────────────────────────────────────
-export const voucherProtection = arcjet({
-  key: process.env.ARCJET_KEY!,
-  rules: [
-    // Moderate rate limiting for voucher operations
-    fixedWindow({
-      mode: "LIVE",
-      characteristics: ["ip.src"],
-      window: "1m",
-      max: 20,
-      ...(isDevelopment && { max: 40 }),
-    }),
-    // Shield protection
-    shield({
-      mode: "LIVE",
-    }),
-    // Block all bots
-    detectBot({
-      mode: "LIVE",
-      allow: [],
-    }),
-  ],
-});
-
-// ─── MIDDLEWARE HELPER ──────────────────────────────────────────────────────────
+// middleware helper
 export const createArcjetMiddleware = createMiddleware;
 
-// ─── SERVER ACTION HELPERS ──────────────────────────────────────────────────────
-
-// ─── REQUEST TYPE FOR SERVER ACTIONS ────────────────────────────────────────────
 interface ServerActionRequest {
   headers: Headers;
   ip: string;
 }
 
-/**
- * Protect server actions with rate limiting
- * Use this for server actions that need rate limiting protection
- */
 export async function protectServerAction(
   protection: ReturnType<typeof arcjet>,
   headers: Headers,
   errorMessage = "Too many requests. Please try again later."
 ) {
-  // Create a simplified request object for server actions
   const fakeRequest: ServerActionRequest = {
     headers,
     ip:
@@ -235,13 +141,11 @@ export async function protectServerAction(
   return decision;
 }
 
-/**
- * Helper to get headers in server actions (from Next.js 15+)
- */
+// helper to get headers in server actions
 export async function getServerActionHeaders() {
   const { headers } = await import("next/headers");
   return headers();
 }
 
-// ─── TYPE EXPORTS ───────────────────────────────────────────────────────────────
+// types
 export type { ArcjetDecision } from "@arcjet/next";

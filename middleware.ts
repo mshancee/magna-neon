@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 
-// ─── ROUTE CONFIGURATION ─────────────────────────────────────────────────────────
+// route groups
 const routes = {
   public: ["/", "/maintenance"],
   auth: ["/login", "/register"],
@@ -9,7 +9,7 @@ const routes = {
   unprotectedApi: ["/api/auth", "/api/health"],
 };
 
-// ─── UTILITIES ─────────────────────────────────────────────────────────────────
+// Utility to check if the current path matches any in a list
 const isRouteMatch = (path: string, list: string[]) =>
   list.some((r) => path === r || path.startsWith(r + "/"));
 
@@ -27,7 +27,7 @@ const createRedirect = (
 const createError = (msg: string, status = 401) =>
   NextResponse.json({ error: msg }, { status });
 
-// ─── MIDDLEWARE ────────────────────────────────────────────────────────────────
+// middleware function
 export default async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const ua = req.headers.get("user-agent") || "";
@@ -54,7 +54,6 @@ export default async function middleware(req: NextRequest) {
 
     // Auth pages
     if (isRouteMatch(pathname, routes.auth)) {
-      // If user is already authenticated, redirect to dashboard instead of home
       const response = isAuth
         ? createRedirect(req, "/dashboard")
         : NextResponse.next();
@@ -65,10 +64,10 @@ export default async function middleware(req: NextRequest) {
     // Admin
     if (isRouteMatch(pathname, routes.admin)) {
       if (!isAuth)
-        return createRedirect(req, "/auth/signin", { callbackUrl: pathname });
+        return createRedirect(req, "/register", { callbackUrl: pathname });
       if (!isAdmin) return createRedirect(req, "/dashboard");
 
-      // Add cache control headers for desk pages to ensure fresh data
+      // cache control headers
       const response = NextResponse.next();
       response.headers.set(
         "Cache-Control",
@@ -94,8 +93,6 @@ export default async function middleware(req: NextRequest) {
 
     // Default: protected
     if (!isAuth) {
-      // Allow known search engine and social crawlers to proceed so they can
-      // read metadata and index pages. Real users still get redirected.
       if (isBot) {
         const response = NextResponse.next();
         response.headers.set("x-pathname", pathname);
@@ -108,8 +105,6 @@ export default async function middleware(req: NextRequest) {
     return response;
   } catch {
     if (!isRouteMatch(pathname, [...routes.public, ...routes.auth])) {
-      // In case of an authentication error, allow crawlers to continue so
-      // metadata can be indexed. Real users still get redirected to signin.
       if (isBot) return NextResponse.next();
       return createRedirect(req, "/login", {
         callbackUrl: pathname,
@@ -120,7 +115,7 @@ export default async function middleware(req: NextRequest) {
   }
 }
 
-// ─── MATCHER ────────────────────────────────────────────────────────────────────
+// matcher to apply middleware to all routes except for the ones specified
 export const config = {
   matcher: [
     "/((?!api/auth|_next/static|_next/image|favicon.ico|manifest.json|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
