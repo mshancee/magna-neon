@@ -1,9 +1,8 @@
 "use client";
 
-import type React from "react";
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -12,29 +11,23 @@ import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
+  CardDescription,
 } from "@/components/ui/card";
 import {
   Loader2,
   AlertCircle,
-  Shield,
-  Zap,
-  Users,
-  Star,
   ArrowRight,
-  Chrome,
   Github,
   Eye,
   EyeOff,
-  Lock,
   Mail,
+  Lock,
 } from "lucide-react";
-import Link from "next/link";
 import { signInSchema } from "@/lib/validations/auth";
-import Image from "next/image";
 import { signIn } from "next-auth/react";
+import Link from "next/link";
 
 type SignInFormData = {
   email: string;
@@ -47,10 +40,11 @@ export default function SigninForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [githubLoading, setGithubLoading] = useState(false);
+  const [emailLoading, setEmailLoading] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-
     if (urlError) {
       setErrorMessage(getErrorMessage(urlError));
     }
@@ -84,6 +78,7 @@ export default function SigninForm() {
   const onSubmit = async (data: SignInFormData) => {
     clearErrors();
     setErrorMessage(null);
+    setEmailLoading(true);
 
     try {
       const formData = new FormData();
@@ -102,7 +97,7 @@ export default function SigninForm() {
         if (result.error === "OAUTH_ONLY_USER") {
           setErrorMessage(
             result.message ||
-              "This account was created with GitHub. Please sign in with GitHub."
+              "This account uses GitHub. Please sign in with GitHub below."
           );
         } else {
           setErrorMessage(result.error || "Invalid email or password");
@@ -114,9 +109,10 @@ export default function SigninForm() {
       if (err instanceof Error && err.message.includes("NEXT_REDIRECT")) {
         return;
       }
-
       console.error("Signin error:", err);
       setErrorMessage("An unexpected error occurred. Please try again.");
+    } finally {
+      setEmailLoading(false);
     }
   };
 
@@ -131,330 +127,255 @@ export default function SigninForm() {
 
   const handleGitHubSignIn = async () => {
     try {
+      setGithubLoading(true);
       const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
       await signIn("github", { callbackUrl });
     } catch (error) {
       console.error("GitHub sign-in error:", error);
       setErrorMessage("Failed to sign in with GitHub. Please try again.");
+      setGithubLoading(false);
     }
   };
 
   if (!mounted) return null;
 
   return (
-    <div className="min-h-screen flex bg-gray-50">
-      {/* Left Section - Content */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-gray-900 to-black relative overflow-hidden">
-        <div className="absolute inset-0 bg-black/40 z-0"></div>
+    <section className="bg-gray-900/20 backdrop-blur-md flex items-center justify-center w-full">
+      <motion.div
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6 }}
+        className="w-full max-w-md"
+      >
+        <Card className="bg-gray-900/20 backdrop-blur-lg border-none shadow-xl rounded-3xl">
+          <CardHeader className="text-center pb-6">
+            <CardTitle className="text-3xl font-bold text-[#F9E4AD] font-mono">
+              SIGN IN
+            </CardTitle>
+            <CardDescription className="text-[#FF9940] text-base font-mono">
+              Join the Magna Coders community
+            </CardDescription>
+          </CardHeader>
 
-        <div className="relative z-10 flex flex-col justify-center px-16 py-12 text-white w-full bg-tranparent">
-          <Link href="/" className="text-2xl font-bold mb-12 flex items-center">
-            <Image src="/logo.png" alt="logo" height={48} width={48} />
-            Magna Coders
-          </Link>
+          <CardContent className="space-y-6">
+            {/* Error Message */}
+            {errorMessage && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-[#FF9940] text-sm font-mono flex items-start"
+              >
+                <AlertCircle className="h-4 w-4 mt-0.5 mr-2 flex-shrink-0" />
+                <span>{errorMessage}</span>
+              </motion.div>
+            )}
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
-            className="max-w-md"
-          >
-            <h1 className="text-4xl font-bold mb-6">Welcome back</h1>
-            <p className="text-gray-300 text-lg mb-10">
-              Sign in to access your personalized dashboard, manage your
-              account, and continue your journey with us.
-            </p>
-
-            <div className="space-y-6">
-              <div className="flex items-start">
-                <div className="bg-[#E70008]/20 p-2 rounded-full mr-4">
-                  <Users className="h-5 w-5 text-[#E70008]" />
-                </div>
-                <div>
-                  <h3 className="font-semibold mb-1">Join our community</h3>
-                  <p className="text-gray-400">
-                    Connect with thousands of users worldwide
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start">
-                <div className="bg-[#E70008]/20 p-2 rounded-full mr-4">
-                  <Shield className="h-5 w-5 text-[#E70008]" />
-                </div>
-                <div>
-                  <h3 className="font-semibold mb-1">Secure & Protected</h3>
-                  <p className="text-gray-400">
-                    Your data is encrypted and safe with us
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start">
-                <div className="bg-[#E70008]/20 p-2 rounded-full mr-4">
-                  <Star className="h-5 w-5 text-[#E70008]" />
-                </div>
-                <div>
-                  <h3 className="font-semibold mb-1">Premium Features</h3>
-                  <p className="text-gray-400">
-                    Access exclusive tools and content
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-12 pt-8 border-t border-gray-800">
-              <div className="flex items-center">
-                <div className="flex -space-x-2 mr-4">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-[#E70008] to-orange-500 border-2 border-gray-900"></div>
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 border-2 border-gray-900"></div>
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-green-500 to-teal-500 border-2 border-gray-900"></div>
-                </div>
-                <p className="text-gray-400 text-sm">
-                  <span className="text-[#E70008] font-medium">1,000+</span>{" "}
-                  users trust our platform
-                </p>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </div>
-
-      {/* Right Section - Form */}
-      <div className="w-full lg:w-1/2 flex items-center bg-black justify-center px-4 py-8 sm:px-6 sm:py-12">
-        <motion.div
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.6 }}
-          className="w-full max-w-md"
-        >
-          {/* Mobile Logo */}
-          <div className="lg:hidden mb-8 flex justify-center">
-            <Link href="/" className="text-2xl font-bold flex items-center">
-              <div className="w-10 h-10 rounded-md bg-[#E70008] flex items-center justify-center mr-3">
-                <Zap className="h-6 w-6" fill="white" />
-              </div>
-              Magna Coders
-            </Link>
-          </div>
-
-          <Card className="bg-black border-gray-900 rounded-xl shadow-lg">
-            <CardHeader className="text-center pt-8 pb-4 px-6">
-              <CardTitle className="text-2xl font-bold text-white">
-                Sign In to Your Account
-              </CardTitle>
-              <CardDescription className="text-gray-500">
-                Welcome back! Please enter your details
-              </CardDescription>
-            </CardHeader>
-
-            <CardContent className="px-6 pb-8">
-              {errorMessage && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  className={`mb-4 p-3 border rounded-lg text-sm flex items-start ${
-                    errorMessage.includes("GitHub")
-                      ? "bg-blue-50 border-blue-200 text-blue-700"
-                      : "bg-red-50 border-red-200 text-red-700"
-                  }`}
+            {/* Email/Password Form */}
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+              <div className="space-y-2">
+                <Label
+                  htmlFor="email"
+                  className="text-[#F9E4AD] text-sm font-medium font-mono"
                 >
-                  <AlertCircle className="h-4 w-4 mt-0.5 mr-2 flex-shrink-0" />
-                  <div className="flex-1">
-                    <span>{errorMessage}</span>
-                    {errorMessage.includes("GitHub") && (
-                      <div className="mt-2">
-                        <button
-                          type="button"
-                          onClick={handleGitHubSignIn}
-                          className="text-blue-600 hover:text-blue-800 underline text-sm font-medium"
-                        >
-                          Sign in with GitHub instead
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </motion.div>
-              )}
-
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="email"
-                    className="text-gray-700 text-sm font-medium"
-                  >
-                    Email Address
-                  </Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
-                    <Input
-                      id="email"
-                      type="email"
-                      {...register("email", {
-                        onChange: () => handleInputChange("email"),
-                      })}
-                      placeholder="Enter your email"
-                      className={`pl-10 bg-gray-900 border-gray-900 text-gray-900 placeholder:text-gray-500 focus-visible:ring-1 focus-visible:ring-[#E70008] h-11 rounded-lg ${
-                        errors.email
-                          ? "ring-1 ring-red-500 border-red-500"
-                          : "focus:border-[#E70008]"
-                      }`}
-                      autoComplete="email"
-                      disabled={isSubmitting}
-                      aria-invalid={!!errors.email}
-                    />
-                  </div>
-                  {errors.email && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="flex items-center gap-2 text-red-600 text-sm"
-                    >
-                      <AlertCircle className="h-4 w-4" />
-                      {errors.email.message}
-                    </motion.div>
-                  )}
+                  Email
+                </Label>
+                <div className="relative">
+                  <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-[#FF9940]" />
+                  <Input
+                    id="email"
+                    type="email"
+                    {...register("email", {
+                      onChange: () => handleInputChange("email"),
+                    })}
+                    placeholder="your@email.com"
+                    className={`pl-12 h-14 bg-gray-950/50 border border-[#E70008]/30 text-[#F9E4AD] placeholder:text-[#FF9940]/50 focus:border-[#E70008] focus:ring-[#E70008]/30 rounded-2xl text-base font-mono ${
+                      errors.email
+                        ? "border-[#E70008] focus:border-[#E70008]"
+                        : ""
+                    }`}
+                    autoComplete="email"
+                    disabled={isSubmitting || githubLoading || emailLoading}
+                    aria-invalid={!!errors.email}
+                  />
                 </div>
-
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label
-                      htmlFor="password"
-                      className="text-gray-700 text-sm font-medium"
-                    >
-                      Password
-                    </Label>
-                    <Link
-                      href="/forgot-password"
-                      className="text-sm text-[#E70008] hover:text-[#FF333A] transition-colors"
-                    >
-                      Forgot password?
-                    </Link>
-                  </div>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
-                    <Input
-                      id="password"
-                      type={showPassword ? "text" : "password"}
-                      {...register("password", {
-                        onChange: () => handleInputChange("password"),
-                      })}
-                      placeholder="Enter your password"
-                      className={`pl-10 pr-10 bg-gray-900 border-gray-900 text-gray-900 placeholder:text-gray-500 focus-visible:ring-1 focus-visible:ring-[#E70008] h-11 rounded-lg ${
-                        errors.password
-                          ? "ring-1 ring-red-500 border-red-500"
-                          : "focus:border-[#E70008]"
-                      }`}
-                      autoComplete="current-password"
-                      disabled={isSubmitting}
-                      aria-invalid={!!errors.password}
-                    />
-                    <button
-                      type="button"
-                      className="absolute right-3 top-3 text-gray-500 hover:text-gray-700"
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
-                      {showPassword ? (
-                        <EyeOff className="h-4 w-4" />
-                      ) : (
-                        <Eye className="h-4 w-4" />
-                      )}
-                    </button>
-                  </div>
-                  {errors.password && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="flex items-center gap-2 text-red-600 text-sm"
-                    >
-                      <AlertCircle className="h-4 w-4" />
-                      {errors.password.message}
-                    </motion.div>
-                  )}
-                </div>
-
-                <div className="pt-2">
-                  <Button
-                    type="submit"
-                    className="w-full bg-[#E70008] hover:bg-[#FF333A] text-white font-medium h-11 rounded-lg transition-colors shadow-lg shadow-[#E70008]/20"
-                    disabled={isSubmitting}
+                {errors.email && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex items-center gap-2 text-[#FF9940] text-sm font-mono"
                   >
-                    {isSubmitting ? (
-                      <span className="flex items-center justify-center gap-2">
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        Signing In...
-                      </span>
+                    <AlertCircle className="h-4 w-4" />
+                    {errors.email.message}
+                  </motion.div>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label
+                  htmlFor="password"
+                  className="text-[#F9E4AD] text-sm font-medium font-mono"
+                >
+                  Password
+                </Label>
+                <div className="relative">
+                  <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-[#FF9940]" />
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    {...register("password", {
+                      onChange: () => handleInputChange("password"),
+                    })}
+                    placeholder="••••••••"
+                    className={`pl-12 pr-12 h-14 bg-gray-950/50 border border-[#E70008]/30 text-[#F9E4AD] placeholder:text-[#FF9940]/50 focus:border-[#E70008] focus:ring-[#E70008]/30 rounded-2xl text-base font-mono ${
+                      errors.password
+                        ? "border-[#E70008] focus:border-[#E70008]"
+                        : ""
+                    }`}
+                    autoComplete="current-password"
+                    disabled={isSubmitting || githubLoading || emailLoading}
+                    aria-invalid={!!errors.password}
+                  />
+                  <button
+                    type="button"
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-[#FF9940] hover:text-[#F9E4AD] transition-colors"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-5 w-5" />
                     ) : (
-                      <span className="flex items-center justify-center gap-2">
-                        Sign In <ArrowRight className="h-4 w-4" />
-                      </span>
+                      <Eye className="h-5 w-5" />
                     )}
-                  </Button>
+                  </button>
                 </div>
-
-                <div className="relative my-6">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-gray-800"></div>
-                  </div>
-                  <div className="relative flex justify-center text-sm">
-                    <span className="px-2 bg-black text-gray-500">
-                      Or continue with
-                    </span>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <Button
-                    variant="outline"
-                    className="h-10 bg-gray-900 border-gray-900 text-gray-700 hover:bg-gray-50"
-                    type="button"
-                    disabled={isSubmitting}
+                {errors.password && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex items-center gap-2 text-[#FF9940] text-sm font-mono"
                   >
-                    <Chrome className="h-4 w-4 mr-2 text-[#E70008]" />
-                    Google
-                  </Button>
-
-                  <Button
-                    variant="outline"
-                    className="h-10 bg-gray-900 border-gray-900 text-white hover:bg-gray-800"
-                    type="button"
-                    disabled={isSubmitting}
-                    onClick={handleGitHubSignIn}
+                    <AlertCircle className="h-4 w-4" />
+                    {errors.password.message}
+                  </motion.div>
+                )}
+                <div className="text-right">
+                  <Link
+                    href="/forgot-password"
+                    className="text-sm text-[#E70008] hover:text-[#D60007] transition-colors font-mono"
                   >
-                    <Github className="h-4 w-4 mr-2 text-white" />
-                    GitHub
-                  </Button>
+                    Forgot password?
+                  </Link>
                 </div>
+              </div>
 
-                <div className="text-center mt-6">
-                  <p className="text-gray-600 text-sm">
-                    Don&apos;t have an account?{" "}
-                    <Link
-                      href="/register"
-                      className="text-[#E70008] hover:text-[#FF333A] font-medium transition-colors"
+              <Button
+                type="submit"
+                className="relative w-full h-14 bg-[#E70008] hover:bg-[#D60007] text-[#F9E4AD] font-mono text-base font-semibold rounded-2xl transition-all duration-200 overflow-hidden"
+                disabled={isSubmitting || githubLoading || emailLoading}
+              >
+                <AnimatePresence>
+                  {emailLoading ? (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      className="flex items-center justify-center gap-2"
                     >
-                      Sign up now
-                    </Link>
-                  </p>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                      Signing In...
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      className="flex items-center justify-center gap-2"
+                    >
+                      Sign In
+                      <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+                <motion.div
+                  className="absolute inset-0 bg-white/20"
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{
+                    scale: emailLoading ? 0 : 1.5,
+                    opacity: emailLoading ? 0 : 0.3,
+                  }}
+                  transition={{ duration: 0.2 }}
+                />
+              </Button>
+            </form>
 
-          <div className="mt-6 text-center text-xs text-gray-500">
-            <p>
-              By signing in, you agree to our{" "}
-              <a href="#" className="text-[#E70008] hover:underline">
-                Terms of Service
-              </a>{" "}
-              and{" "}
-              <a href="#" className="text-[#E70008] hover:underline">
-                Privacy Policy
-              </a>
-            </p>
-          </div>
-        </motion.div>
-      </div>
-    </div>
+            {/* Divider */}
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-[#E70008]/30"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-4 bg-transparent text-[#FF9940] font-mono">
+                  or
+                </span>
+              </div>
+            </div>
+
+            {/* GitHub Sign In */}
+            <Button
+              type="button"
+              variant="outline"
+              className="relative w-full h-14 bg-transparent border-none  text-[#F9E4AD] hover:bg-[#E70008]/20 hover:text-[#F9E4AD] font-mono text-base font-semibold rounded-2xl transition-all duration-200 overflow-hidden"
+              onClick={handleGitHubSignIn}
+              disabled={isSubmitting || githubLoading || emailLoading}
+            >
+              <AnimatePresence>
+                {githubLoading ? (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    className="flex items-center justify-center gap-2"
+                  >
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    Signing In...
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    className="flex items-center justify-center gap-2"
+                  >
+                    <Github className="h-5 w-5" />
+                    Sign In with GitHub
+                  </motion.div>
+                )}
+              </AnimatePresence>
+              <motion.div
+                className="absolute inset-0 bg-white/20"
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{
+                  scale: githubLoading ? 0 : 1.5,
+                  opacity: githubLoading ? 0 : 0.3,
+                }}
+                transition={{ duration: 0.2 }}
+              />
+            </Button>
+
+            {/* Sign Up Link */}
+            <div className="text-center pt-4">
+              <p className="text-[#FF9940] text-sm font-mono">
+                New to Magna Coders?{" "}
+                <Link
+                  href="/register"
+                  className="text-[#E70008] hover:text-[#D60007] font-semibold transition-colors"
+                >
+                  Create an account
+                </Link>
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+    </section>
   );
 }

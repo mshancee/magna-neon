@@ -127,29 +127,42 @@ export default function SetupPasswordForm() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
       <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6 }}
         className="w-full max-w-md"
       >
-        <Card className="bg-black border border-gray-800 rounded-xl">
-          <CardHeader className="text-center pt-8 pb-4 px-6">
-            <CardTitle className="text-2xl font-bold text-white">
+        {/* Logo */}
+        <div className="text-center mb-8">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-3 text-white hover:text-gray-300 transition-colors"
+          >
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center">
+              <span className="text-white font-bold text-lg">M</span>
+            </div>
+            <span className="text-2xl font-bold">Magna Coders</span>
+          </Link>
+        </div>
+
+        <Card className="bg-white/10 backdrop-blur-lg border-white/20 shadow-2xl">
+          <CardHeader className="text-center pb-6">
+            <CardTitle className="text-2xl font-bold text-white mb-2">
               Setup Password
             </CardTitle>
-            <CardDescription className="text-gray-400">
-              Add a password to your account for email/password login
+            <CardDescription className="text-gray-300">
+              Add a password to enable email/password login
             </CardDescription>
           </CardHeader>
 
-          <CardContent className="px-6 pb-8">
+          <CardContent className="space-y-6">
             {errorMessage && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
-                className="mb-4 p-3 bg-red-900/20 border border-red-800 rounded-lg text-red-400 text-sm flex items-start"
+                className="p-4 bg-red-500/10 border border-red-500/20 rounded-lg text-red-300 text-sm flex items-start"
               >
                 <AlertCircle className="h-4 w-4 mt-0.5 mr-2 flex-shrink-0" />
                 <span>{errorMessage}</span>
@@ -160,7 +173,7 @@ export default function SetupPasswordForm() {
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
-                className="mb-4 p-3 bg-green-900/20 border border-green-800 rounded-lg text-green-400 text-sm flex items-start"
+                className="p-4 bg-green-500/10 border border-green-500/20 rounded-lg text-green-300 text-sm flex items-start"
               >
                 <CheckCircle className="h-4 w-4 mt-0.5 mr-2 flex-shrink-0" />
                 <span>{successMessage}</span>
@@ -171,12 +184,12 @@ export default function SetupPasswordForm() {
               <div className="space-y-2">
                 <Label
                   htmlFor="password"
-                  className="text-gray-300 text-sm font-medium"
+                  className="text-white text-sm font-medium"
                 >
                   New Password
                 </Label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
+                  <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
                     id="password"
                     type={showPassword ? "text" : "password"}
@@ -184,17 +197,17 @@ export default function SetupPasswordForm() {
                       onChange: () => handleInputChange("password"),
                     })}
                     placeholder="Create a strong password"
-                    className={`pl-10 pr-10 bg-gray-900 border-gray-700 text-white placeholder:text-gray-500 focus-visible:ring-1 focus-visible:ring-orange-500 h-11 rounded-lg ${
+                    className={`pl-10 pr-10 h-12 bg-white/10 border-white/20 text-white placeholder:text-gray-400 focus:border-purple-400 focus:ring-purple-400/20 ${
                       errors.password
-                        ? "ring-1 ring-red-500 border-red-500"
-                        : "focus:border-orange-500"
+                        ? "border-red-400 focus:border-red-400"
+                        : ""
                     }`}
                     disabled={isSubmitting}
                     aria-invalid={!!errors.password}
                   />
                   <button
                     type="button"
-                    className="absolute right-3 top-3 text-gray-500 hover:text-gray-300"
+                    className="absolute right-3 top-3 text-gray-400 hover:text-white transition-colors"
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? (

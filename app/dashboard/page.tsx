@@ -2,7 +2,7 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { SignOutButton } from "@/components/auth/signout-button";
 import PasswordSetupCard from "@/components/dashboard/password-setup-card";
-import Avatar from "@/components/ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -17,11 +17,15 @@ export default async function DashboardPage() {
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div className="flex items-center gap-4">
-            <Avatar
-              src={session.user?.image}
-              name={session.user?.name || ""}
-              size="lg"
-            />
+            <Avatar className="h-12 w-12 border-2 border-[#E70008]/30 rounded-full">
+              <AvatarImage
+                src={session.user?.image || ""}
+                alt={session.user?.name || "User"}
+              />
+              <AvatarFallback className="bg-gradient-to-br from-[#E70008] to-[#FF9940] text-[#F9E4AD] font-mono">
+                {session.user?.name?.[0]?.toUpperCase() || "U"}
+              </AvatarFallback>
+            </Avatar>
             <div>
               <h1 className="text-3xl font-bold">Dashboard</h1>
               <p className="text-gray-400">
