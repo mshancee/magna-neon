@@ -1,11 +1,18 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Code2, GitBranch, Zap, Play, Users } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
+import {
+  ArrowRight,
+  Code2,
+  GitBranch,
+  Zap,
+  Play,
+  Users,
+  Loader2,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
 
 const typewriterPhrases = [
   "Magna Coders",
@@ -54,6 +61,11 @@ export function HeroSection() {
   const [currentCodeIndex, setCurrentCodeIndex] = useState(0);
   const [displayedCode, setDisplayedCode] = useState("");
   const [codeCharIndex, setCodeCharIndex] = useState(0);
+  const [isLoading, setIsLoading] = useState({
+    dashboard: false,
+    community: false,
+  });
+  const router = useRouter();
 
   useEffect(() => {
     const currentPhrase = typewriterPhrases[currentPhraseIndex];
@@ -104,16 +116,20 @@ export function HeroSection() {
     }
   }, [codeCharIndex, currentCodeIndex]);
 
+  const handleNavigation = (
+    path: string,
+    button: "dashboard" | "community"
+  ) => {
+    setIsLoading((prev) => ({ ...prev, [button]: true }));
+    setTimeout(() => {
+      router.push(path);
+    }, 1000); // Simulate network delay
+  };
+
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-cover bg-center bg-fixe">
-      {/* Background image */}
-      <Image
-        src="/images/background.jpg"
-        alt="Background"
-        fill
-        priority
-        className="absolute inset-0 object-cover opacity-20"
-      />
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-cover bg-center bg-fixed">
+      {/* Background image with loading skeleton */}
+
       <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-center min-h-screen py-20">
           <motion.div
@@ -127,7 +143,7 @@ export function HeroSection() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.8, delay: 0.2 }}
-                className="inline-flex items-center gap-2 px-4 py-2 border-2  border-white backdrop-blur-sm rounded-full"
+                className="inline-flex items-center gap-2 px-4 py-2 border-2 border-white backdrop-blur-sm rounded-full"
               >
                 <Code2 className="w-4 h-4 text-white" />
                 <span className="text-sm font-mono text-white">
@@ -164,27 +180,85 @@ export function HeroSection() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.8 }}
             >
-              <Link href="/dashboard">
-                <Button
-                  size="lg"
-                  className="bg-[#E70008] hover:bg-[#D60007] text-[#F9E4AD] px-8 py-4 text-lg font-mono font-semibold group border-none rounded-2xl h-12 w-full sm:w-auto"
-                >
-                  <Play className="mr-2 w-5 h-5" />
-                  <span>Start building</span>
-                  <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                </Button>
-              </Link>
+              <Button
+                size="lg"
+                className="bg-[#E70008] hover:bg-[#D60007] text-[#F9E4AD] px-8 py-4 text-lg font-mono font-semibold group border-none rounded-2xl h-14 w-full sm:w-auto relative overflow-hidden"
+                onClick={() => handleNavigation("/dashboard", "dashboard")}
+                disabled={isLoading.dashboard}
+              >
+                <AnimatePresence>
+                  {isLoading.dashboard ? (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      className="flex items-center justify-center"
+                    >
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      className="flex items-center"
+                    >
+                      <Play className="mr-2 w-5 h-5" />
+                      <span>Start building</span>
+                      <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+                <motion.div
+                  className="absolute inset-0 bg-white/20"
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{
+                    scale: isLoading.dashboard ? 0 : 1.5,
+                    opacity: isLoading.dashboard ? 0 : 0.3,
+                  }}
+                  transition={{ duration: 0.2 }}
+                />
+              </Button>
 
-              <Link href="/community">
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="border-2 h-12 rounded-2xl border-[#E70008] text-[#F9E4AD] hover:bg-secondary hover:text-secondary-foreground px-8 py-4 text-lg font-bold font-mono bg-transparent w-full sm:w-auto"
-                >
-                  <GitBranch className="mr-2 w-5 h-5" />
-                  <span>{"git clone community"}</span>
-                </Button>
-              </Link>
+              <Button
+                variant="outline"
+                size="lg"
+                className="border-2 h-14 rounded-2xl border-[#E70008] text-[#F9E4AD] hover:bg-secondary hover:text-secondary-foreground px-8 py-4 text-lg font-bold font-mono bg-transparent w-full sm:w-auto relative overflow-hidden"
+                onClick={() => handleNavigation("/community", "community")}
+                disabled={isLoading.community}
+              >
+                <AnimatePresence>
+                  {isLoading.community ? (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      className="flex items-center justify-center"
+                    >
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      className="flex items-center"
+                    >
+                      <GitBranch className="mr-2 w purpos-5 h-5" />
+                      <span>{"git clone community"}</span>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+                <motion.div
+                  className="absolute inset-0 bg-white/20"
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{
+                    scale: isLoading.community ? 0 : 1.5,
+                    opacity: isLoading.community ? 0 : 0.3,
+                  }}
+                  transition={{ duration: 0.2 }}
+                />
+              </Button>
             </motion.div>
 
             <motion.div
@@ -212,7 +286,7 @@ export function HeroSection() {
           >
             <div className="w-full max-w-xl">
               <div className="bg-gray-950 backdrop-blur-md rounded-xl border border-border/50 shadow-2xl overflow-hidden">
-                {/* Terminal header -mac vibe */}
+                {/* Terminal header - mac vibe */}
                 <div className="flex items-center justify-between px-6 py-4 bg-gray-900 border-b border-border/30">
                   <div className="flex space-x-2">
                     <div className="w-3 h-3 bg-destructive rounded-full"></div>
