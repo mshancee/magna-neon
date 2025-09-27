@@ -16,9 +16,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { AlertCircle, Loader2 } from "lucide-react";
+import { AlertCircle, Loader2, Github } from "lucide-react";
 import Link from "next/link";
 import { signUpSchema } from "@/lib/validations/auth";
+import { signIn } from "next-auth/react";
 
 // Create a local type that matches our form defaults
 type FormData = {
@@ -71,7 +72,17 @@ export default function SignupForm() {
       const result = await signUpAction(formData);
 
       if (!result.success) {
-        console.error(result.error || "Failed to create account");
+        const errorMessage = result.error || "Failed to create account";
+        console.error(errorMessage);
+
+        // If account already exists, show helpful message
+        if (errorMessage.includes("already exists")) {
+          // You could add state to show a specific message about GitHub signin
+          console.log(
+            "Account exists - user should try signing in or using GitHub"
+          );
+        }
+
         setIsSubmitted(false);
         return;
       }
@@ -89,6 +100,14 @@ export default function SignupForm() {
   const handleInputChange = (field: keyof FormData) => {
     if (errors[field]) {
       clearErrors(field);
+    }
+  };
+
+  const handleGitHubSignUp = async () => {
+    try {
+      await signIn("github", { callbackUrl: "/dashboard" });
+    } catch (error) {
+      console.error("GitHub sign-up error:", error);
     }
   };
 
@@ -257,6 +276,30 @@ export default function SignupForm() {
                 </Button>
               </div>
             </form>
+
+            {/* Divider */}
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-800"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-black text-gray-500">
+                  Or continue with
+                </span>
+              </div>
+            </div>
+
+            {/* GitHub Sign Up */}
+            <Button
+              variant="outline"
+              className="w-full h-10 bg-gray-900 border-gray-700 text-white hover:bg-gray-800"
+              type="button"
+              disabled={isSubmitting}
+              onClick={handleGitHubSignUp}
+            >
+              <Github className="h-4 w-4 mr-2" />
+              Continue with GitHub
+            </Button>
 
             {/* Sign In Link */}
             <div className="text-center mt-6">

@@ -1,4 +1,5 @@
 "use server";
+import { headers } from "next/headers";
 import { NextRequest } from "next/server";
 import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
@@ -10,6 +11,7 @@ import { getLocationDataFromRequest } from "@/utils/location-detector";
 
 export async function signUpAction(formData: FormData) {
   try {
+    const headersList = await headers();
     // generate unique referral code
     function generateReferralCode(): string {
       const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
@@ -144,8 +146,16 @@ export async function signInAction(formData: FormData) {
 
     console.error("Signin error:", error);
 
-    // Handle actual signin errors
+    // Handle specific error types
     if (error instanceof Error) {
+      if (error.message.includes("OAUTH_ONLY_USER")) {
+        return {
+          success: false,
+          error: "OAUTH_ONLY_USER",
+          message:
+            "This account was created with GitHub. Please sign in with GitHub or set up a password first.",
+        };
+      }
       return {
         success: false,
         error: "Invalid email or password",

@@ -1,6 +1,8 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { SignOutButton } from "@/components/auth/signout-button";
+import PasswordSetupCard from "@/components/dashboard/password-setup-card";
+import Avatar from "@/components/ui/avatar";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -14,8 +16,25 @@ export default async function DashboardPage() {
     <div className="min-h-screen bg-black text-white p-4">
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold">Dashboard: Debug</h1>
+          <div className="flex items-center gap-4">
+            <Avatar
+              src={session.user?.image}
+              name={session.user?.name || ""}
+              size="lg"
+            />
+            <div>
+              <h1 className="text-3xl font-bold">Dashboard</h1>
+              <p className="text-gray-400">
+                Welcome back, {session.user?.name}
+              </p>
+            </div>
+          </div>
           <SignOutButton />
+        </div>
+
+        {/* Account Security Section */}
+        <div className="mb-8">
+          <PasswordSetupCard />
         </div>
 
         {/* User Information Section */}

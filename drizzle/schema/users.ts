@@ -16,11 +16,12 @@ export const users = pgTable(
     id: uuid("id").defaultRandom().primaryKey(),
     email: varchar("email", { length: 255 }).notNull(),
     name: varchar("name", { length: 255 }).notNull(),
+    image: text("image"), // Profile image URL (GitHub avatar or uploaded image)
     countryCode: varchar("country_code", { length: 2 }).default("KE").notNull(), // ISO alpha-2
     country: varchar("country", { length: 100 }), // full country name from i18n-iso-countries
     role: userRoleEnum("role").default("user").notNull(),
     status: userStatusEnum("status").default("inactive").notNull(),
-    passwordHash: text("password_hash").notNull(),
+    passwordHash: text("password_hash"), // Optional for OAuth users
     referralCode: varchar("referral_code", { length: 50 }).notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
