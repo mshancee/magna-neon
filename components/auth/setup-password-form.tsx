@@ -127,27 +127,14 @@ export default function SetupPasswordForm() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-bblack flex items-center justify-center p-4">
       <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6 }}
         className="w-full max-w-md"
       >
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-3 text-white hover:text-gray-300 transition-colors"
-          >
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center">
-              <span className="text-white font-bold text-lg">M</span>
-            </div>
-            <span className="text-2xl font-bold">Magna Coders</span>
-          </Link>
-        </div>
-
-        <Card className="bg-white/10 backdrop-blur-lg border-white/20 shadow-2xl">
+        <Card className="bg-white/10 backdrop-blur-lg border-white/20 rounded-2xl shadow-2xl">
           <CardHeader className="text-center pb-6">
             <CardTitle className="text-2xl font-bold text-white mb-2">
               Setup Password
@@ -245,7 +232,7 @@ export default function SetupPasswordForm() {
                       onChange: () => handleInputChange("confirmPassword"),
                     })}
                     placeholder="Confirm your password"
-                    className={`pl-10 pr-10 bg-gray-900 border-gray-700 text-white placeholder:text-gray-500 focus-visible:ring-1 focus-visible:ring-orange-500 h-11 rounded-lg ${
+                    className={`pl-10 pr-10 bg-white/10 border-white/20 text-white placeholder:text-gray-400 focus-visible:ring-1 focus-visible:ring-orange-500 h-11 rounded-lg ${
                       errors.confirmPassword
                         ? "ring-1 ring-red-500 border-red-500"
                         : "focus:border-orange-500"
