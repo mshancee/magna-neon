@@ -34,6 +34,7 @@ import {
 import Link from "next/link";
 import { signInSchema } from "@/lib/validations/auth";
 import Image from "next/image";
+import { signIn } from "next-auth/react";
 
 type SignInFormData = {
   email: string;
@@ -98,7 +99,14 @@ export default function SigninForm() {
       const result = await signInAction(formData);
 
       if (result && !result.success) {
-        setErrorMessage(result.error || "Invalid email or password");
+        if (result.error === "OAUTH_ONLY_USER") {
+          setErrorMessage(
+            result.message ||
+              "This account was created with GitHub. Please sign in with GitHub."
+          );
+        } else {
+          setErrorMessage(result.error || "Invalid email or password");
+        }
       } else {
         setErrorMessage("Invalid email or password");
       }
@@ -118,6 +126,16 @@ export default function SigninForm() {
     }
     if (errorMessage) {
       setErrorMessage(null);
+    }
+  };
+
+  const handleGitHubSignIn = async () => {
+    try {
+      const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
+      await signIn("github", { callbackUrl });
+    } catch (error) {
+      console.error("GitHub sign-in error:", error);
+      setErrorMessage("Failed to sign in with GitHub. Please try again.");
     }
   };
 
@@ -235,10 +253,27 @@ export default function SigninForm() {
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
-                  className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm flex items-start"
+                  className={`mb-4 p-3 border rounded-lg text-sm flex items-start ${
+                    errorMessage.includes("GitHub")
+                      ? "bg-blue-50 border-blue-200 text-blue-700"
+                      : "bg-red-50 border-red-200 text-red-700"
+                  }`}
                 >
                   <AlertCircle className="h-4 w-4 mt-0.5 mr-2 flex-shrink-0" />
-                  <span>{errorMessage}</span>
+                  <div className="flex-1">
+                    <span>{errorMessage}</span>
+                    {errorMessage.includes("GitHub") && (
+                      <div className="mt-2">
+                        <button
+                          type="button"
+                          onClick={handleGitHubSignIn}
+                          className="text-blue-600 hover:text-blue-800 underline text-sm font-medium"
+                        >
+                          Sign in with GitHub instead
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </motion.div>
               )}
 
@@ -381,11 +416,12 @@ export default function SigninForm() {
 
                   <Button
                     variant="outline"
-                    className="h-10 bg-gray-900 border-gray-900 text-gray-700 hover:bg-gray-50"
+                    className="h-10 bg-gray-900 border-gray-900 text-white hover:bg-gray-800"
                     type="button"
                     disabled={isSubmitting}
+                    onClick={handleGitHubSignIn}
                   >
-                    <Github className="h-4 w-4 mr-2 text-gray-800" />
+                    <Github className="h-4 w-4 mr-2 text-white" />
                     GitHub
                   </Button>
                 </div>

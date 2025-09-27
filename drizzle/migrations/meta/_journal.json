@@ -5,8 +5,22 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1758027546012,
-      "tag": "0000_safe_gressill",
+      "when": 1758969895106,
+      "tag": "0000_square_shadow_king",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1758970171933,
+      "tag": "0001_elite_norrin_radd",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1758972800564,
+      "tag": "0002_slimy_cerebro",
       "breakpoints": true
     }
   ]
