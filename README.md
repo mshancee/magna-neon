@@ -11,7 +11,6 @@ I'm Gonna write a description here. 👊
 - **Database**: [Neon Postgres](https://neon.tech/) (serverless Postgres)
 - **ORM**: [Drizzle ORM](https://orm.drizzle.team/)
 - **Authentication**: [Auth.js](https://authjs.dev/) (NextAuth v5) with Credentials provider and JWT sessions
-- **Security**: [Arcjet](https://arcjet.io/) for bot detection and rate limiting
 - **IP Geolocation**: [IPInfo](https://ipinfo.io/) for country detection during signup
 - **Password Security**: [bcryptjs](https://www.npmjs.com/package/bcryptjs) for password hashing
 - **Validation**: [Zod](https://zod.dev/) for form and API validation
@@ -44,7 +43,6 @@ I'm Gonna write a description here. 👊
 2. Edit the `.env` file with your credentials (see [.env.example](.env.example) for details):
    - `DATABASE_URL` - Postgres connection URL for Neon
    - `AUTH_SECRET` - Secret for Auth.js sessions (generate with `npx auth secret`)
-   - `ARCJET_KEY` - API key for Arcjet protection
    - `IPINFO_TOKEN` - Token for IP geolocation
 
 > **Note:** Both `.env` and `.env.local` are required because Drizzle’s migration tooling does not fully support `.env.local` on its own.
@@ -94,7 +92,6 @@ npm start
 
 - User authentication with email/password
 - Country detection during signup using IP geolocation
-- Rate limiting and bot protection with Arcjet
 - Responsive UI components with shadcn/ui
 - Server actions for secure data handling
 - PostgreSQL database with Drizzle ORM
@@ -104,5 +101,3 @@ npm start
 For detailed instructions on environment variables, check the [.env.example](.env.example) file.
 
 To understand the database schema, see the [drizzle/schema](drizzle/schema) directory.
-
-For security configuration, review [lib/security/arcjet.ts](lib/security/arcjet.ts).

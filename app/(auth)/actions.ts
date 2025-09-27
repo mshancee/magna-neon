@@ -1,25 +1,15 @@
 "use server";
-import { headers } from "next/headers";
 import { NextRequest } from "next/server";
 import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
 import { db } from "@/drizzle/drizzle";
 import { users } from "@/drizzle/schema";
 import { signInSchema, apiSignUpSchema } from "@/lib/validations/auth";
-import { authProtection, protectServerAction } from "@/lib/security/arcjet";
 import { signIn, signOut } from "@/auth";
 import { getLocationDataFromRequest } from "@/utils/location-detector";
 
 export async function signUpAction(formData: FormData) {
   try {
-    // Rate limiting protection
-    const headersList = await headers();
-    await protectServerAction(
-      authProtection,
-      headersList,
-      "Too many signup attempts"
-    );
-
     // generate unique referral code
     function generateReferralCode(): string {
       const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
@@ -113,14 +103,6 @@ export async function signUpAction(formData: FormData) {
 
 export async function signInAction(formData: FormData) {
   try {
-    // Rate limiting protection
-    const headersList = await headers();
-    await protectServerAction(
-      authProtection,
-      headersList,
-      "Too many signin attempts"
-    );
-
     // Extract and validate form data
     const rawData = {
       email: formData.get("email") as string,
