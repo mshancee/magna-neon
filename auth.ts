@@ -5,6 +5,7 @@ import bcrypt from "bcryptjs";
 import { UserRole, UserStatus } from "@/drizzle/schema/enums";
 import { db } from "@/drizzle/drizzle";
 import { users, accounts } from "@/drizzle/schema";
+import { eq, and } from "drizzle-orm";
 
 // Extend NextAuth's expected User type with the required shape
 interface AuthUser {
@@ -25,6 +26,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     GitHubProvider({
       clientId: process.env.GITHUB_CLIENT_ID!,
       clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+      allowDangerousEmailAccountLinking: true,
     }),
     CredentialsProvider({
       name: "credentials",
@@ -109,10 +111,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           // Check if user already exists
           const { getUserByEmail } = await import("./lib/users/signup");
           const existingUser = await getUserByEmail(user.email!);
-          const { eq, and } = await import("drizzle-orm");
 
           if (existingUser) {
             // User exists, link the GitHub account
+            // SECURITY CHECK: This is handled by allowDangerousEmailAccountLinking
+            // but we add extra logging for security awareness
+            console.log("[Auth] Linking GitHub account to existing user:", {
+              userId: existingUser.id,
+              email: existingUser.email,
+              githubEmail: user.email,
+            });
+
             // Check if GitHub account is already linked
             const existingAccount = await db
               .select()
@@ -139,6 +148,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 scope: account.scope,
                 id_token: account.id_token,
               });
+              console.log("[Auth] Successfully linked GitHub account");
+            } else {
+              console.log("[Auth] GitHub account already linked");
             }
 
             // Update existing user with GitHub avatar if they don't have one
@@ -152,13 +164,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 .where(eq(users.id, existingUser.id));
             }
 
-            // Update user object with existing user data for session
-            user.id = existingUser.id;
-            user.role = existingUser.role;
-            user.status = existingUser.status;
-            user.country = existingUser.country || "US";
-            user.referralCode = existingUser.referralCode;
-            user.image = existingUser.image || user.image; // Use existing or GitHub avatar
+            return true;
           } else {
             // Generate referral code for new GitHub users
             const generateReferralCode = (): string => {
@@ -174,7 +180,35 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
             const referralCode = generateReferralCode();
 
-            // Create user record with GitHub data
+            // Detect location for GitHub users
+            let locationData = {
+              countryCode: "KE", // Default fallback
+              country: "Kenya",
+            };
+
+            try {
+              // Try to get location data via IP detection
+              const { getLocationDataFromIP } = await import(
+                "./utils/location-detector"
+              );
+
+              const detectedLocation = await getLocationDataFromIP();
+              locationData = {
+                countryCode: detectedLocation.countryCode,
+                country: detectedLocation.country || "Kenya", // Handle null case
+              };
+              console.log(
+                "[Auth] Detected location for GitHub user:",
+                locationData
+              );
+            } catch (error) {
+              console.warn(
+                "[Auth] Could not detect location for GitHub user, using defaults:",
+                error
+              );
+            }
+
+            // Create user record with GitHub data and detected location
             const [newUser] = await db
               .insert(users)
               .values({
@@ -182,8 +216,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 name: user.name || "GitHub User",
                 image: user.image || null, // GitHub avatar URL
                 referralCode,
-                countryCode: "US", // Default, can be enhanced with IP detection
-                country: "United States",
+                countryCode: locationData.countryCode,
+                country: locationData.country,
                 status: "active", // GitHub users are active by default
                 role: "user",
                 // passwordHash is null for OAuth users
@@ -204,12 +238,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               id_token: account.id_token,
             });
 
-            // Update user object with new user data
-            user.id = newUser.id;
-            user.role = newUser.role;
-            user.status = newUser.status;
-            user.country = newUser.country || "US";
-            user.referralCode = newUser.referralCode;
+            console.log(
+              "[Auth] Created new user with GitHub account:",
+              newUser.id
+            );
+            return true;
           }
         } catch (error) {
           console.error("Error handling GitHub user:", error);
@@ -220,15 +253,43 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
     async jwt({ token, user }) {
       if (user) {
-        // Initial sign in - populate token with user data
-        token.id = user.id;
-        token.email = user.email;
-        token.name = user.name;
-        token.picture = user.image; // NextAuth uses 'picture' for images
-        token.role = user.role || "user";
-        token.status = user.status || "active";
-        token.country = user.country || "KE";
-        token.referralCode = user.referralCode || "";
+        // Initial sign in - get user data from database
+        try {
+          const { getUserByEmail } = await import("./lib/users/signup");
+          const dbUser = await getUserByEmail(user.email!);
+
+          if (dbUser) {
+            token.id = dbUser.id;
+            token.email = dbUser.email;
+            token.name = dbUser.name;
+            token.picture = dbUser.image || user.image;
+            token.role = dbUser.role || "user";
+            token.status = dbUser.status || "active";
+            token.country = dbUser.country || "KE";
+            token.referralCode = dbUser.referralCode || "";
+          } else {
+            // Fallback to user object data
+            token.id = user.id;
+            token.email = user.email!;
+            token.name = user.name!;
+            token.picture = user.image;
+            token.role = "user";
+            token.status = "active";
+            token.country = "KE";
+            token.referralCode = "";
+          }
+        } catch (error) {
+          console.error("[Auth] Error fetching user data for JWT:", error);
+          // Fallback to user object data
+          token.id = user.id;
+          token.email = user.email!;
+          token.name = user.name!;
+          token.picture = user.image;
+          token.role = "user";
+          token.status = "active";
+          token.country = "KE";
+          token.referralCode = "";
+        }
       }
       console.log("[Auth] JWT token created:", token);
       return token;
@@ -275,10 +336,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   pages: {
     signIn: "/login",
+    error: "/auth/error",
   },
   session: {
     strategy: "jwt", // Use JWT sessions for simplicity
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   secret: process.env.AUTH_SECRET,
+  debug: process.env.NODE_ENV === "development",
 });

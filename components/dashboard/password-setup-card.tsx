@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
+import { useSession, signIn } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -10,7 +10,18 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Lock, Github, CheckCircle, AlertCircle } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Lock, Github, CheckCircle, AlertCircle, Mail } from "lucide-react";
 import Link from "next/link";
 
 export default function PasswordSetupCard() {
@@ -155,20 +166,76 @@ export default function PasswordSetupCard() {
                 <span className="text-sm">GitHub Not Connected</span>
               </div>
             </div>
-            <Button
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-              onClick={() => {
-                // Trigger GitHub OAuth for account linking
-                window.location.href =
-                  "/api/auth/signin/github?callbackUrl=/dashboard";
-              }}
-            >
-              <Github className="h-4 w-4 mr-2" />
-              Connect GitHub
-            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                  <Github className="h-4 w-4 mr-2" />
+                  Connect GitHub
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent className="bg-gray-900 border-gray-800">
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="flex items-center gap-2 text-blue-400">
+                    <Mail className="h-5 w-5" />
+                    Email Verification Required
+                  </AlertDialogTitle>
+                  <AlertDialogDescription className="text-gray-300">
+                    To link your GitHub account, make sure your GitHub account
+                    uses the same email address as your current account:
+                    <br />
+                    <br />
+                    <strong className="text-blue-400">
+                      {session?.user?.email}
+                    </strong>
+                    <br />
+                    <br />
+                    If your GitHub account uses a different email, the linking
+                    will fail for security reasons.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel className="border-gray-700 text-gray-300 hover:bg-gray-800">
+                    Cancel
+                  </AlertDialogCancel>
+                  <AlertDialogAction
+                    className="bg-blue-600 hover:bg-blue-700"
+                    onClick={async () => {
+                      try {
+                        // Prepare OAuth by storing location data
+                        const response = await fetch(
+                          "/api/auth/prepare-oauth",
+                          {
+                            method: "POST",
+                          }
+                        );
+                        const data = await response.json();
+
+                        if (data.success) {
+                          // Store session ID in localStorage for the OAuth callback
+                          localStorage.setItem(
+                            "oauth-session-id",
+                            data.sessionId
+                          );
+                        }
+                      } catch (error) {
+                        console.warn(
+                          "Could not prepare OAuth location data:",
+                          error
+                        );
+                      }
+
+                      // Proceed with GitHub OAuth
+                      signIn("github", { callbackUrl: "/dashboard" });
+                    }}
+                  >
+                    Continue to GitHub
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
             <p className="text-xs text-gray-400">
-              This will allow you to sign in with GitHub in addition to
-              email/password
+              Your GitHub account must use the same email address (
+              {session?.user?.email}) for security reasons
             </p>
           </div>
         </CardContent>
